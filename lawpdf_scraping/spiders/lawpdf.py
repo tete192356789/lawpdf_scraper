@@ -4,10 +4,10 @@ from playwright.async_api import async_playwright
 from lawpdf_scraping.items import LawpdfScrapingItem
 import logging
 import json
-
+from urllib.parse import urljoin
 class LawpdfSpider(scrapy.Spider):
     name = "lawpdf"
-    # allowed_domains = ["library.coj.go.th"]
+    allowed_domains = ["library.coj.go.th"]
     start_urls = [
         "https://library.coj.go.th/th/constitution-database.html?keyword=&option=all"
     ]
@@ -36,7 +36,10 @@ class LawpdfSpider(scrapy.Spider):
         page = response.meta["playwright_page"]
         # await page.close()
         page_num =1
-        while True:
+        base_url = "https://library.coj.go.th/th/"
+        while page_num < 3: 
+            ## for scrape all page change condition to True(while True:) 
+            ##scrapy will write output to json after all pipeline done
             for blog in response.css(
                 "article.col-lg-9.col-md-8.search-detail ul.list-page.home-list-news.mt-4 span"
             ):
@@ -60,7 +63,7 @@ class LawpdfSpider(scrapy.Spider):
 
                 if link is not None:
                     item["name"] = name
-                    item["link"] = link
+                    item["file_urls"] = [urljoin(base_url,link)]
                     item["law_type"] = law_type
                     item["release_date"] = release_date
                     yield item
@@ -88,89 +91,89 @@ class LawpdfSpider(scrapy.Spider):
         await page.close()
 
 
-    async def get_next_page_content(self,url):
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)  # Set headless to False for debugging
-            page = await browser.new_page()
-            await page.goto(url)
-            # Simulate clicking the "Next" button or navigating using element attributes
-            next_page_button = await page.wait_for_selector("xpath=//div[@class='paging']/button[@class='btn-purple last']/preceding-sibling::button[1]")  # Replace with actual selector
-            await next_page_button.click()
-            await page.wait_for_timeout(2000)  # Wait for page to load
-            await page.wait_for_selector("article.col-lg-9.col-md-8.search-detail ul.list-page.home-list-news.mt-4 span")
+    # async def get_next_page_content(self,url):
+    #     async with async_playwright() as p:
+    #         browser = await p.chromium.launch(headless=False)  # Set headless to False for debugging
+    #         page = await browser.new_page()
+    #         await page.goto(url)
+    #         # Simulate clicking the "Next" button or navigating using element attributes
+    #         next_page_button = await page.wait_for_selector("xpath=//div[@class='paging']/button[@class='btn-purple last']/preceding-sibling::button[1]")  # Replace with actual selector
+    #         await next_page_button.click()
+    #         await page.wait_for_timeout(2000)  # Wait for page to load
+    #         await page.wait_for_selector("article.col-lg-9.col-md-8.search-detail ul.list-page.home-list-news.mt-4 span")
             
-            content = await page.content()
-            next_url = page.url
-            for blog in page.css("article.col-lg-9.col-md-8.search-detail ul.list-page.home-list-news.mt-4 span"):
-                item = LawpdfScrapingItem()
+    #         content = await page.content()
+    #         next_url = page.url
+    #         for blog in page.css("article.col-lg-9.col-md-8.search-detail ul.list-page.home-list-news.mt-4 span"):
+    #             item = LawpdfScrapingItem()
 
-                name = blog.css("li div.container span.font-title a ::text").get()
+    #             name = blog.css("li div.container span.font-title a ::text").get()
 
-                inner_spans = blog.css(
-                    "li div.container aside.download-list-news.mt-3 span.mr-4"
-                )
-                if len(inner_spans) < 2:
-                    law_type = None
-                    release_date = None
-                else:
-                    law_type = inner_spans[0].css(".mr-4::text").get()
-                    release_date = inner_spans[1].css(".mr-4::text").get()
+    #             inner_spans = blog.css(
+    #                 "li div.container aside.download-list-news.mt-3 span.mr-4"
+    #             )
+    #             if len(inner_spans) < 2:
+    #                 law_type = None
+    #                 release_date = None
+    #             else:
+    #                 law_type = inner_spans[0].css(".mr-4::text").get()
+    #                 release_date = inner_spans[1].css(".mr-4::text").get()
 
-                link = blog.css(
-                    "li div.container aside.download-list-news.mt-3 a ::attr(href)"
-                ).get()
+    #             link = blog.css(
+    #                 "li div.container aside.download-list-news.mt-3 a ::attr(href)"
+    #             ).get()
 
-                if link is not None:
-                    item["name"] = name
-                    item["link"] = link
-                    item["law_type"] = law_type
-                    item["release_date"] = release_date
-                    yield item
+    #             if link is not None:
+    #                 item["name"] = name
+    #                 item["link"] = link
+    #                 item["law_type"] = law_type
+    #                 item["release_date"] = release_date
+    #                 yield item
 
-
-            
-            await browser.close()
-            yield content, next_url
 
             
+    #         await browser.close()
+    #         yield content, next_url
 
-    async def parse_content(self, response):
-        print('**********')
-        print('parse_contenting')
+            
 
-        for blog in response.css(
-            "article.col-lg-9.col-md-8.search-detail ul.list-page.home-list-news.mt-4 span"
-        ):
-            item = LawpdfScrapingItem()
+    # async def parse_content(self, response):
+    #     print('**********')
+    #     print('parse_contenting')
 
-            name = blog.css("li div.container span.font-title a ::text").get()
+    #     for blog in response.css(
+    #         "article.col-lg-9.col-md-8.search-detail ul.list-page.home-list-news.mt-4 span"
+    #     ):
+    #         item = LawpdfScrapingItem()
 
-            inner_spans = blog.css(
-                "li div.container aside.download-list-news.mt-3 span.mr-4"
-            )
-            if len(inner_spans) < 2:
-                law_type = None
-                release_date = None
-            else:
-                law_type = inner_spans[0].css(".mr-4::text").get()
-                release_date = inner_spans[1].css(".mr-4::text").get()
+    #         name = blog.css("li div.container span.font-title a ::text").get()
 
-            link = blog.css(
-                "li div.container aside.download-list-news.mt-3 a ::attr(href)"
-            ).get()
+    #         inner_spans = blog.css(
+    #             "li div.container aside.download-list-news.mt-3 span.mr-4"
+    #         )
+    #         if len(inner_spans) < 2:
+    #             law_type = None
+    #             release_date = None
+    #         else:
+    #             law_type = inner_spans[0].css(".mr-4::text").get()
+    #             release_date = inner_spans[1].css(".mr-4::text").get()
 
-            if link is not None:
-                item["name"] = name
-                item["link"] = link
-                item["law_type"] = law_type
-                item["release_date"] = release_date
-                print('****************')
-                print('****************')
-                print(name)
-                print(link)
-                print(law_type)
-                print(release_date)
-                yield item
+    #         link = blog.css(
+    #             "li div.container aside.download-list-news.mt-3 a ::attr(href)"
+    #         ).get()
+
+    #         if link is not None:
+    #             item["name"] = name
+    #             item["link"] = link
+    #             item["law_type"] = law_type
+    #             item["release_date"] = release_date
+    #             print('****************')
+    #             print('****************')
+    #             print(name)
+    #             print(link)
+    #             print(law_type)
+    #             print(release_date)
+    #             yield item
 
 
     async def errback(self, failure):

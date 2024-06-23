@@ -69,9 +69,10 @@ EXTENSIONS = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    "lawpdf_scraping.pipelines.LawpdfScrapingPipeline": 300,
-# }
+ITEM_PIPELINES = {
+    "lawpdf_scraping.pipelines.LawpdfScrapingPipeline" :200,
+   "lawpdf_scraping.pipelines.DownloadFilesPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -98,3 +99,6 @@ EXTENSIONS = {
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+#Define Path To Save Files
+FILES_STORE = r"/Users/nachanon/Documents/lawpdf_scraper/lawpdf_scraping/files"
