@@ -11,6 +11,8 @@ import os
 import hashlib
 import datetime
 import re
+import mysql.connector
+
 class LawpdfScrapingPipeline():
     def process_item(self, item, spider):
         pass
@@ -55,3 +57,42 @@ class DownloadFilesPipeline(FilesPipeline):
     def file_path(self, request, response=None, info=None):
         file_name: str = request.url.split("/")[-1].split("&")[0]
         return file_name
+    
+class SaveToMySQL():
+    def __init__(self):
+        self.conn = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            database = 'scrape_db',
+            password = ''
+        )
+
+        self.cur = self.conn.cursor()
+        self.cur.execute("""
+        CREATE TABLE IF NOT EXISTS lawpdf(
+            id int NOT NULL auto_increment, 
+            name text,
+            file_urls text,
+            law_type VARCHAR(10),
+            release_date DATE,
+            PRIMARY KEY (id)
+        )
+        """)
+
+    def process_item(self, item, spider):
+        self.cur.execute("SELECT * FROM lawpdf WHERE file_urls = %s", (item['file_urls'][0],))
+        result = self.cur.fetchone()
+
+        if result:
+            spider.logger.warn("file urls already in database: %s" % item['file_urls'])
+        else:
+            self.cur.execute("""
+                        INSERT INTO lawpdf (name , file_urls , law_type , release_date) 
+                        VALUES (%s,%s,%s,%s)
+            """,(item['name'],item['file_urls'][0],item['law_type'],item['release_date']))
+            self.conn.commit()
+        return item
+    
+    def close_spider(self,spider):
+        self.cur.close()
+        self.conn.close()

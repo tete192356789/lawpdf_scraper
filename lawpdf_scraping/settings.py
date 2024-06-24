@@ -72,6 +72,7 @@ EXTENSIONS = {
 ITEM_PIPELINES = {
     "lawpdf_scraping.pipelines.LawpdfScrapingPipeline" :200,
    "lawpdf_scraping.pipelines.DownloadFilesPipeline": 300,
+   "lawpdf_scraping.pipelines.SaveToMySQL" : 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
