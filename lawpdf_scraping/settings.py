@@ -15,7 +15,7 @@ NEWSPIDER_MODULE = "lawpdf_scraping.spiders"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = "lawpdf_scraping (+http://www.yourdomain.com)"
-
+USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
@@ -70,9 +70,9 @@ EXTENSIONS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "lawpdf_scraping.pipelines.LawpdfScrapingPipeline" :200,
-   "lawpdf_scraping.pipelines.DownloadFilesPipeline": 300,
-   "lawpdf_scraping.pipelines.SaveToMySQL" : 400,
+    # "lawpdf_scraping.pipelines.LawpdfScrapingPipeline": 200,
+    # "lawpdf_scraping.pipelines.DownloadFilesPipeline": 300,
+    # "lawpdf_scraping.pipelines.SaveToMySQL": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -101,5 +101,8 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-#Define Path To Save Files
-FILES_STORE = r"/Users/nachanon/Documents/lawpdf_scraper/lawpdf_scraping/files"
+##Define Path To Save Files
+# path on my mac
+# FILES_STORE = r"/Users/nachanon/Documents/lawpdf_scraper/lawpdf_scraping/files"
+# path on my wins
+FILES_STORE = r"/home/tete/lawpdf_scraping2/lawpdf_scraping/files"
